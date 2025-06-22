@@ -3,6 +3,7 @@ mod color;
 mod common;
 mod hittable;
 mod hittable_list;
+mod material;
 mod ray;
 mod sphere;
 mod vec3;
@@ -45,7 +46,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     // check if the ray hits something
     if world.hit(r, 0.001, common::INFINITY, &mut rec) {
         // calculate the bounce direction
-        let direction = rec.normal + Vec3::random_in_unit_sphere();
+        let direction = rec.normal + Vec3::random_unit_vector();
         // Create a new ray from the hit point in the bounce direction
         return 0.5 * ray_color(&Ray::new(rec.p, direction), world, depth - 1);
     }

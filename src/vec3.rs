@@ -63,6 +63,17 @@ impl Vec3 {
             return p;
         }
     }
+
+    pub fn random_unit_vector() -> Vec3 {
+        unit_vector(Self::random_in_unit_sphere())
+    }
+
+    pub fn near_zero(&self) -> bool {
+        const EPS: f64 = 1.0e-8;
+
+        // return true if the vector is close to 0 in all directions
+        self.e[0].abs() < EPS && self.e[1].abs() < EPS && self.e[2].abs() < EPS
+    }
 }
 
 pub type Point3 = Vec3;
