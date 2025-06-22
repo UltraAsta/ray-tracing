@@ -12,9 +12,9 @@ pub fn write_color(out: &mut impl Write, pixel_color: Color, samples_per_pixel: 
 
     // after casting multiple rays per pixel, you get the averaged result on the multiple samples
     let scale = 1.0 / samples_per_pixel as f64;
-    r *= scale;
-    g *= scale;
-    b *= scale;
+    r = f64::sqrt(scale * r);
+    g = f64::sqrt(scale * g);
+    b = f64::sqrt(scale * b);
 
     // Write the translated [0, 255] value of each color component
     writeln!(

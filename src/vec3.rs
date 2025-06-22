@@ -1,6 +1,8 @@
 use std::fmt::{Display, Formatter, Result};
 use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub};
 
+use crate::common;
+
 #[derive(Copy, Default, Clone)]
 pub struct Vec3 {
     e: [f64; 3],
@@ -9,6 +11,22 @@ pub struct Vec3 {
 impl Vec3 {
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self { e: [x, y, z] }
+    }
+
+    pub fn random() -> Vec3 {
+        Vec3::new(
+            common::random_double(),
+            common::random_double(),
+            common::random_double(),
+        )
+    }
+
+    pub fn radnom_range(min: f64, max: f64) -> Vec3 {
+        Vec3::new(
+            common::random_double_range(min, max),
+            common::random_double_range(min, max),
+            common::random_double_range(min, max),
+        )
     }
 
     pub fn x(&self) -> f64 {
@@ -29,6 +47,21 @@ impl Vec3 {
 
     pub fn length_squared(&self) -> f64 {
         self.e[0] * self.e[0] + self.e[1] * self.e[1] + self.e[2] * self.e[2]
+    }
+
+    // rejection method implementation
+    pub fn random_in_unit_sphere() -> Vec3 {
+        loop {
+            // random point in the cube
+            let p = Vec3::radnom_range(-1.0, 1.0);
+            // outside the sphere ?
+            if p.length_squared() >= 1.0 {
+                // try again
+                continue;
+            }
+            // inside sphere - keep it
+            return p;
+        }
     }
 }
 
