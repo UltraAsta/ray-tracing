@@ -68,6 +68,10 @@ impl Vec3 {
         unit_vector(Self::random_in_unit_sphere())
     }
 
+    pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
+        v - 2.0 * dot(v, n) * n
+    }
+
     pub fn near_zero(&self) -> bool {
         const EPS: f64 = 1.0e-8;
 
