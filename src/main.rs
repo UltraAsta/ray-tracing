@@ -15,15 +15,10 @@ use camera::Camera;
 use color::Color;
 use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
-use material::Lambertian;
+use material::{Dielectric, Lambertian, Metal};
 use ray::Ray;
-use shapes::Cube;
+use shapes::{Cube, Sphere, Square};
 use vec3::Point3;
-
-use crate::{
-    material::Metal,
-    shapes::{Disk, Square},
-};
 
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     // If we've exceeded the ray bounce limit, no more light is gathered
@@ -54,6 +49,7 @@ fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
 fn random_scene() -> HittableList {
     let mut world = HittableList::new();
 
+    // Ground
     let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
     world.add(Box::new(Square::horizontal(
         Point3::new(0.0, 0.0, 0.0),
@@ -61,98 +57,161 @@ fn random_scene() -> HittableList {
         ground_material.clone(),
     )));
 
-    // for a in -5..5 {
-    //     for b in -5..5 {
-    //         let choose_mat = common::random_double();
-    //         let center = Point3::new(
-    //             a as f64 + 0.9 * common::random_double(),
-    //             0.2,
-    //             b as f64 + 0.9 * common::random_double(),
-    //         );
-
-    //         if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-    //             if choose_mat < 0.8 {
-    //                 // Diffuse
-    //                 let albedo = Color::random() * Color::random();
-    //                 let sphere_material = Rc::new(Lambertian::new(albedo));
-    //                 world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
-    //             } else if choose_mat < 0.95 {
-    //                 // Metal
-    //                 let albedo = Color::random_range(0.5, 1.0);
-    //                 let fuzz = common::random_double_range(0.0, 0.5);
-    //                 let sphere_material = Rc::new(Metal::new(albedo, fuzz));
-    //                 world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
-    //             } else {
-    //                 // Glass
-    //                 let sphere_material = Rc::new(Dielectric::new(1.5));
-    //                 world.add(Box::new(Sphere::new(center, 0.2, sphere_material)));
-    //             }
-    //         }
-    //     }
-    // }
-
-    // let material1 = Rc::new(Dielectric::new(1.5));
-    // world.add(Box::new(Sphere::new(
-    //     Point3::new(0.0, 1.0, 0.0),
-    //     1.0,
-    //     material1,
-    // )));
-
-    // let material2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    // world.add(Box::new(Sphere::new(
-    //     Point3::new(-4.0, 1.0, 0.0),
-    //     1.0,
-    //     material2,
-    // )));
-
-    // let material3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    // world.add(Box::new(Sphere::new(
-    //     Point3::new(4.0, 1.0, 0.0),
-    //     1.0,
-    //     material3,
-    // )));
-
-    let material = Rc::new(Lambertian::new(Color::new(0.2, 0.6, 0.0)));
-    let cube = Cube::centered(Point3::new(0.0, 2.0, 0.0), 2.0, material);
-
-    let metal = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Box::new(Disk::vertical(
-        Point3::new(5.0, 2.0, 0.0),
-        2.0,
-        metal,
+    // Sphere
+    let sphere_material = Rc::new(Metal::new(Color::new(0.2, 0.7, 0.7), 0.1));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 1.0, 1.0),
+        1.0,
+        sphere_material,
     )));
 
+    // Cube
+    let cube_material = Rc::new(Metal::new(Color::new(0.2, 0.7, 0.7), 0.1));
+    let cube = Cube::new(
+        Point3::new(-4.5, 0.0, 0.0),
+        Point3::new(-2.5, 2.0, 2.0),
+        cube_material,
+    );
     world.add(Box::new(cube));
 
+    // Cylinder
+    let cylinder_material = Rc::new(Lambertian::new(Color::new(0.8, 1.0, 0.2)));
+    let cylinder = crate::shapes::cylinder::Cylinder::new(
+        Point3::new(3.5, 0.0, 1.0),
+        vec3::Vec3::new(0.0, 1.0, 0.0),
+        0.8,
+        2.0,
+        cylinder_material,
+    );
+    world.add(Box::new(cylinder));
+
     world
+}
+
+enum SceneType {
+    Sphere,
+    PlaneCube,
+    AllObjects,
+    AllObjectsAltCamera,
+}
+
+fn scene_sphere() -> HittableList {
+    let mut world = HittableList::new();
+    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.add(Box::new(Square::horizontal(
+        Point3::new(0.0, 0.0, 0.0),
+        1000.0,
+        ground_material,
+    )));
+    let sphere_material = Rc::new(Metal::new(Color::new(0.8, 0.2, 0.2), 0.1));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 1.0, 0.0),
+        1.0,
+        sphere_material,
+    )));
+    world
+}
+
+fn scene_plane_cube() -> HittableList {
+    let mut world = HittableList::new();
+    let ground_material = Rc::new(Lambertian::new(Color::new(0.4, 0.15, 0.05)));
+    world.add(Box::new(Square::horizontal(
+        Point3::new(0.0, 0.0, 0.0),
+        1000.0,
+        ground_material,
+    )));
+    let cube_material = Rc::new(Metal::new(Color::new(0.1, 0.2, 0.2), 0.2)); // dimmer
+    let cube = Cube::new(
+        Point3::new(-1.0, 0.0, -1.0),
+        Point3::new(1.0, 2.0, 1.0),
+        cube_material,
+    );
+    world.add(Box::new(cube));
+    world
+}
+
+fn scene_all_objects() -> HittableList {
+    let mut world = HittableList::new();
+    let ground_material = Rc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    world.add(Box::new(Square::horizontal(
+        Point3::new(0.0, 0.0, 0.0),
+        1000.0,
+        ground_material.clone(),
+    )));
+    let sphere_material = Rc::new(Metal::new(Color::new(0.2, 0.7, 0.7), 0.1));
+    world.add(Box::new(Sphere::new(
+        Point3::new(0.0, 1.0, 1.0),
+        1.0,
+        sphere_material,
+    )));
+    let cube_material = Rc::new(Metal::new(Color::new(0.2, 0.7, 0.7), 0.1));
+    let cube = Cube::new(
+        Point3::new(-4.5, 0.0, 0.0),
+        Point3::new(-2.5, 2.0, 2.0),
+        cube_material,
+    );
+    world.add(Box::new(cube));
+    let cylinder_material = Rc::new(Lambertian::new(Color::new(0.8, 1.0, 0.2)));
+    let cylinder = crate::shapes::cylinder::Cylinder::new(
+        Point3::new(3.5, 0.0, 1.0),
+        vec3::Vec3::new(0.0, 1.0, 0.0),
+        0.8,
+        2.0,
+        cylinder_material,
+    );
+    world.add(Box::new(cylinder));
+    world
+}
+
+fn scene_all_objects_alt_camera() -> (HittableList, Point3, Point3) {
+    let world = scene_all_objects();
+    let lookfrom = Point3::new(0.0, 5.0, 10.0); // Camera from the side
+
+    let lookat = Point3::new(0.0, 1.0, 1.0);
+    (world, lookfrom, lookat)
 }
 
 fn main() {
     // Image
 
     const ASPECT_RATIO: f64 = 3.0 / 2.0;
-    const IMAGE_WIDTH: i32 = 600;
+    const IMAGE_WIDTH: i32 = 800;
     const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f64 / ASPECT_RATIO) as i32;
     const SAMPLES_PER_PIXEL: i32 = 500;
     const MAX_DEPTH: i32 = 50;
 
-    // World
+    // Select the scene to render:
+    let scene_type = SceneType::AllObjectsAltCamera;
 
-    let world = random_scene();
+    // World and camera setup
+    let (world, lookfrom, lookat) = match scene_type {
+        SceneType::Sphere => {
+            let w = scene_sphere();
+            (w, Point3::new(0.0, 2.0, 5.0), Point3::new(0.0, 1.0, 0.0))
+        }
+        SceneType::PlaneCube => {
+            let w = scene_plane_cube();
+            (w, Point3::new(0.0, 3.0, 7.0), Point3::new(0.0, 1.0, 0.0))
+        }
+        SceneType::AllObjects => {
+            let w = scene_all_objects();
+            (w, Point3::new(0.0, 3.0, 10.0), Point3::new(0.0, 1.0, 1.0))
+        }
+        SceneType::AllObjectsAltCamera => {
+            let (w, lookfrom, lookat) = scene_all_objects_alt_camera();
+            (w, lookfrom, lookat)
+        }
+    };
 
-    // Camera
-
-    let lookfrom = Point3::new(0.0, 1.0, 15.0);
-    let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Point3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;
-    let aperture = 0.1;
+    let aperture = 0.05;
 
     let cam = Camera::new(
         lookfrom,
         lookat,
         vup,
-        50.0,
+        43.0,
         ASPECT_RATIO,
         aperture,
         dist_to_focus,
