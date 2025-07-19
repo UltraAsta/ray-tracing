@@ -15,12 +15,15 @@ use camera::Camera;
 use color::Color;
 use hittable::{HitRecord, Hittable};
 use hittable_list::HittableList;
-use material::{Dielectric, Lambertian, Metal};
+use material::Lambertian;
 use ray::Ray;
-use shapes::{Cube, Sphere};
+use shapes::Cube;
 use vec3::Point3;
 
-use crate::shapes::Square;
+use crate::{
+    material::Metal,
+    shapes::{Disk, Square},
+};
 
 fn ray_color(r: &Ray, world: &dyn Hittable, depth: i32) -> Color {
     // If we've exceeded the ray bounce limit, no more light is gathered
@@ -110,7 +113,14 @@ fn random_scene() -> HittableList {
     // )));
 
     let material = Rc::new(Lambertian::new(Color::new(0.2, 0.6, 0.0)));
-    let cube = Cube::centered(Point3::new(0.0, 2.0, 0.0), 2.0, material.clone());
+    let cube = Cube::centered(Point3::new(0.0, 2.0, 0.0), 2.0, material);
+
+    let metal = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    world.add(Box::new(Disk::vertical(
+        Point3::new(5.0, 2.0, 0.0),
+        2.0,
+        metal,
+    )));
 
     world.add(Box::new(cube));
 
@@ -132,7 +142,7 @@ fn main() {
 
     // Camera
 
-    let lookfrom = Point3::new(13.0, 2.0, 3.0);
+    let lookfrom = Point3::new(0.0, 1.0, 15.0);
     let lookat = Point3::new(0.0, 0.0, 0.0);
     let vup = Point3::new(0.0, 1.0, 0.0);
     let dist_to_focus = 10.0;

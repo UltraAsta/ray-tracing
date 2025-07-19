@@ -1,7 +1,6 @@
 use crate::color::Color;
 use crate::hittable::HitRecord;
 use crate::ray::Ray;
-use crate::vec3::Vec3;
 use crate::{common, vec3};
 
 pub trait Material {

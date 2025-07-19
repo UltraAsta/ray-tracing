@@ -51,7 +51,7 @@ impl Hittable for Sphere {
         rec.t = root;
         rec.p = r.at(rec.t);
 
-        // conevrt into a unit vector by dividing by the radius
+        // convert into a unit vector by dividing by the radius
         let outwards_normal = (rec.p - self.center) / self.radius;
         rec.set_face_normal(r, outwards_normal);
         rec.mat = Some(self.mat.clone());

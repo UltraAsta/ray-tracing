@@ -1,7 +1,7 @@
 use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::{Point3, Vec3};
+use crate::vec3::{self, Point3, Vec3};
 use std::rc::Rc;
 
 pub struct Square {
@@ -15,7 +15,7 @@ pub struct Square {
 
 impl Square {
     pub fn new(center: Point3, normal: Vec3, size: f64, material: Rc<dyn Material>) -> Self {
-        let unit_normal = crate::vec3::unit_vector(normal);
+        let unit_normal = vec3::unit_vector(normal);
 
         // Create perpendicular axes for the square
         // Choose an arbitrary vector that's not parallel to normal
@@ -25,8 +25,8 @@ impl Square {
             Vec3::new(1.0, 0.0, 0.0)
         };
 
-        let u_axis = crate::vec3::unit_vector(crate::vec3::cross(unit_normal, temp));
-        let v_axis = crate::vec3::cross(unit_normal, u_axis);
+        let u_axis = vec3::unit_vector(vec3::cross(unit_normal, temp));
+        let v_axis = vec3::cross(unit_normal, u_axis);
 
         Square {
             center,
@@ -52,7 +52,7 @@ impl Square {
 impl Hittable for Square {
     fn hit(&self, r: &Ray, t_min: f64, t_max: f64, rec: &mut HitRecord) -> bool {
         // Step 1: Check if ray hits the infinite plane
-        let ray_dot_normal = crate::vec3::dot(r.direction(), self.normal);
+        let ray_dot_normal = vec3::dot(r.direction(), self.normal);
 
         // If ray is parallel to the plane, no intersection
         if ray_dot_normal.abs() < 1e-8 {
@@ -61,7 +61,7 @@ impl Hittable for Square {
 
         // Calculate t value for plane intersection
         let center_to_origin = self.center - r.origin();
-        let t = crate::vec3::dot(center_to_origin, self.normal) / ray_dot_normal;
+        let t = vec3::dot(center_to_origin, self.normal) / ray_dot_normal;
 
         // Check if intersection is within our t range
         if t <= t_min || t >= t_max {
@@ -75,8 +75,8 @@ impl Hittable for Square {
         let center_to_hit = hit_point - self.center;
 
         // Project onto the square's local coordinate system
-        let u_coord = crate::vec3::dot(center_to_hit, self.u_axis);
-        let v_coord = crate::vec3::dot(center_to_hit, self.v_axis);
+        let u_coord = vec3::dot(center_to_hit, self.u_axis);
+        let v_coord = vec3::dot(center_to_hit, self.v_axis);
 
         // Check bounds
         let half_size = self.size / 2.0;
